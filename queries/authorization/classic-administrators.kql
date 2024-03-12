@@ -1,0 +1,5 @@
+authorizationresources
+| where type =~ 'microsoft.authorization/classicadministrators'
+| extend state = properties.adminState
+| extend roles = split(properties.role, ';')
+| project name, type, subscriptionId, state, roles
