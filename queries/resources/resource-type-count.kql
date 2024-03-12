@@ -1,0 +1,3 @@
+resources
+| summarize count() by type
+| project type, count_

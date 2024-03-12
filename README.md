@@ -33,7 +33,13 @@ az graph query -q 'Resources | project name, type | limit 5'
 
 # Query from file
 QUERY=$(cat <file>)
-az graph query -q $QUERY
+az graph query -q "$QUERY"
+
+
+# Query from file using script with formatted output
+./scripts/resource-graph-query.sh <file>
+./scripts/resource-graph-query.sh queries/resources/resource-type-count.kql # example
+
 ```
 
 See more details [here](https://learn.microsoft.com/en-us/azure/governance/resource-graph/first-query-azurecli).
