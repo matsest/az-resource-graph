@@ -1,0 +1,13 @@
+resources
+| where type == "microsoft.network/networksecuritygroups"
+| extend securityRules = properties.securityRules
+| mv-expand securityRules
+| where securityRules.properties.destinationApplicationSecurityGroups != '' or securityRules.properties.sourceApplicationSecurityGroups != ''
+| mv-expand srcAsgs = securityRules.properties.sourceApplicationSecurityGroups
+| mv-expand dstAsgs = securityRules.properties.destinationApplicationSecurityGroups
+| extend srcAsgNames = split(srcAsgs.id, "/")[-1]
+| extend dstAsgNames = split(dstAsgs.id, "/")[-1]
+| mv-expand subnet = properties.subnets
+| extend vnetName = split(subnet.id, "/")[-3]
+| extend subnetName = split(subnet.id, "/")[-1]
+| project id, nsg_name=name, vnetName, subnetName, subscriptionId, resourceGroup, location, ruleName=securityRules.name, srcAsgNames, dstAsgNames, ruleProperties=securityRules.properties

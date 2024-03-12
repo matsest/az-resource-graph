@@ -1,0 +1,23 @@
+resources
+| where type == "microsoft.network/privateendpoints"
+| extend props = parse_json(properties)
+| extend provisioningState = tostring(props.provisioningState)
+| extend subnetId = tostring(props.subnet.id)
+| extend owner = tags['Owner']
+| extend environment = tags['Environment']
+| extend technicalOwner = tags['Technical Owner']
+| join kind = leftouter  (
+    resources 
+    | where type == 'microsoft.network/virtualnetworks'
+    | extend subnets = parse_json(properties).subnets
+    | mv-expand subnets
+    | extend subnetId = tostring(subnets.id)
+    | extend subnetName = subnets.name
+    | extend subnetPrivateEndpointNetworkPolicies = subnets.properties.privateEndpointNetworkPolicies
+    | extend subnetNsgId = subnets.properties.networkSecurityGroup.id
+    | project subnetId, subnetName, subnetNsgId, subnetPrivateEndpointNetworkPolicies
+    )
+    on subnetId
+| project owner, technicalOwner, environment, id, name, location, resourceGroup, subscriptionId, provisioningState, subnetId, subnetName, subnetNsgId, subnetPrivateEndpointNetworkPolicies
+| order by tostring(environment)
+

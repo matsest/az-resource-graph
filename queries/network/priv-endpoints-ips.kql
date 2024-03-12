@@ -1,0 +1,16 @@
+resources
+| where type == "microsoft.network/privateendpoints"
+| extend nics = properties.networkInterfaces
+| mv-expand nics
+| extend nic = tostring(nics.id)
+| project nic
+| join kind=leftouter ( 
+  resources
+  | where type == 'microsoft.network/networkinterfaces'
+  ) on $left.nic == $right.id
+| extend ipConfigs = properties.ipConfigurations
+| mv-expand ipConfigs
+| extend ip = ipConfigs.properties.privateIPAddress
+| extend cidr = strcat(tostring(ip), '/32')
+| project cidr
+| sort by tostring(cidr)
